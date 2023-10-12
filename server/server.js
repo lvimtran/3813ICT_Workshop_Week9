@@ -1,49 +1,55 @@
 const express = require('express');
-const app = express();
-const http = require('http').Server(app);
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const MongoClient = require('mongodb').MongoClient;
-var ObjectID = require('mongodb').ObjectID;
-const PORT = 3000;
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(function(req, res, next){
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
+
+let products = [];
+let currentId = 1;
+
+app.get('/products', (req, res) => {
+    res.json(products);
 });
 
-const products = require('./dbOperations/operations');
-app.post('/products', products.insert);
-app.get('/productFind', products.find);
-app.post('/productUpdate', products.update);
-app.post('/productDelete', products.delete);
+app.post('/products', (req, res) => {
+    const newProduct = req.body;
+    newProduct.id = currentId++;
+    products.push(newProduct);
+    res.json(newProduct);
+});
 
-
-
-
-
-const url = 'mongodb://localhost:27017';
-MongoClient.connect(url, {poolSize:10, useNewUrlParser: true, useUnifiedTopology: true}, function(err, client) {
-    if (err) {return console.log(err)}
-    const dbName = 'mydb';
-    const db = client.db(dbName);
-
-    require('./routes/api-add')(db,app);
-    require('./routes/api-prodcount')(db,app);
-    require('./routes/api.validid')(db,app);
-    require('./routes/api-getlist')(db,app);
-    require('./routes/api-getitem')(db, app,ObjectID);
-    require('./routes/api.update')(db,app,ObjectID);
-    require('./routes/api-deleteitem')(db,app,ObjectID);
-
-    require('./listen')(http)
-})
+app.put('/products/:id', (req, res) => {
+    const { id } = req.params;
+    const updatedProduct = req.body;
+    
+    // Ensure that ID is string, or convert it to the type you need
+    const productIndex = products.findIndex(p => p.id == id);
+    
+    if (productIndex > -1) {
+        products[productIndex] = {...updatedProduct, id}; // Maintain the id
+        res.json(updatedProduct);
+    } else {
+        res.status(404).json({ error: 'Product not found' });
+    }
+  });
+  
+  app.delete('/products/:id', (req, res) => {
+    const { id } = req.params;
+    const productIndex = products.findIndex(p => p.id == id);
+    
+    if (productIndex > -1) {
+        const deletedProduct = products.splice(productIndex, 1);
+        res.json(deletedProduct);
+    } else {
+        res.status(404).json({ error: 'Product not found' });
+    }
+  });
+  
 
 app.listen(PORT, () => {
-    console.log("Server is listening on port 3000")
-})
+    console.log(`Server is running on http://localhost:${PORT}`);
+});

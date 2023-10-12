@@ -1,27 +1,51 @@
 import { Component, OnInit } from '@angular/core';
-import { ProductdataService } from '../productdata.service';
-import { Products } from '../products';
-import { Router } from '@angular/router';
+import { ProductService } from '../product.service';
+import { Product } from '../models/product.model';
+
 @Component({
   selector: 'app-list-product',
-  templateUrl: './list-product.component.html',
-  styleUrls: ['./list-product.component.css']
+  templateUrl: './list-product.component.html'
 })
-export class ListProductComponent implements OnInit{
-  products: Products[] = [];
-  proddata: any;
+export class ListProductComponent implements OnInit {
+  products: Product[] = [];
+
+  constructor(private productService: ProductService) {}
+
   ngOnInit(): void {
-    this.proddata.getlist().subscribe((data: Products[]) => {
-      this.products = data
-    })
+    this.fetchProducts();
   }
- 
-  deleteproduct(id: any){
-    if(confirm("Are you sure you want to delete this item")){
-      this.proddata.deleteitem(id).subscribe((data: Products[])=>{
-        this.products = data
-      })
+
+  fetchProducts(): void {
+    this.productService.getProducts().subscribe(
+      data => this.products = data,
+      error => console.error('Error fetching products: ', error)
+    );
+  }
+
+  editProduct(product: Product): void {
+    // Edit Product logic here
+    const updatedProduct: Product = {
+      ...product,
+      name: prompt('Edit name:', product.name) || product.name,
+      description: prompt('Edit description:', product.description) || product.description,
+      price: Number(prompt('Edit price:', product.price.toString())) || product.price
+    };
+    this.productService.updateProduct(updatedProduct).subscribe(
+      () => this.fetchProducts(),
+      error => console.error('Error updating product: ', error)
+    );
+  }
+
+  removeProduct(productId?: string): void {
+    if (!productId) {
+      console.error('Product ID is undefined. Cannot delete product.');
+      return;
     }
+  
+    this.productService.removeProduct(productId).subscribe(
+      () => this.fetchProducts(),
+      error => console.error('Error deleting product: ', error)
+    );
   }
   
 }

@@ -1,12 +1,6 @@
-<nav class="navbar navbar-expand-sm bg-light">
-  <div class="container-fluid">
-    <ul class="navbar-nav">
-      <li class="navbar-item">
-        <a routerLink="prod-add" class="nav-link" routerLinkActive="active"> Create a Product</a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="prod-get" class="nav-link" routerLinkActive="active">List all Products</a>
-      </li>
-    </ul>
-  </div>
+<h1>{{ title }}</h1>
+<nav>
+  <a routerLink="/add-product">Add Product</a>
+  <a routerLink="/list-products">List Products</a>
 </nav>
+<router-outlet></router-outlet>

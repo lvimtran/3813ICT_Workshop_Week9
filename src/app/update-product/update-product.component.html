@@ -1,0 +1,6 @@
+<form (ngSubmit)="updateProduct()">
+  <input [(ngModel)]="product.name" name="name" placeholder="Name" required>
+  <input [(ngModel)]="product.description" name="description" placeholder="Description" required>
+  <input [(ngModel)]="product.price" name="price" type="number" placeholder="Price" required>
+  <button type="submit">Update Product</button>
+</form>
